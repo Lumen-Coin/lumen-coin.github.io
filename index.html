@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lumen Cüzdan Oluştur</title>
+  <title>Lumen Cüzdan</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
 
+  <!-- Logo -->
   <header class="w-full flex justify-center mb-6">
-    <div class="flex items-center gap-2">
-      <img src="https://raw.githubusercontent.com/Lumen-Coin/lumen-coin.github.io/refs/heads/main/LumenBanner.png" alt="Lumen Logo" class="h-10">
-      <h1 class="text-2xl font-bold">Lumen</h1>
-    </div>
+    <img src="https://raw.githubusercontent.com/Lumen-Coin/lumen-coin.github.io/refs/heads/main/LumenBanner.png" alt="Lumen Logo" class="h-12">
   </header>
 
+  <!-- Wallet Oluştur -->
   <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl text-center">
     <h2 class="text-xl font-bold mb-6">Yeni Cüzdan Oluştur</h2>
 
@@ -67,8 +66,10 @@
   };
 
   document.getElementById('addTokenBtn').onclick = async () => {
-    // Masaüstü MetaMask yüklüyse token eklemeyi dene
-    if (typeof window.ethereum !== "undefined") {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (!isMobile && typeof window.ethereum !== "undefined") {
+      // Masaüstü MetaMask için
       try {
         const wasAdded = await window.ethereum.request({
           method: 'wallet_watchAsset',
@@ -83,17 +84,18 @@
         });
 
         if (wasAdded) {
-          alert("LUMEN token başarıyla eklendi!");
+          alert("LUMEN token MetaMask'a eklendi!");
         } else {
-          alert("Kullanıcı eklemeyi iptal etti.");
+          alert("Token ekleme iptal edildi.");
         }
       } catch (error) {
         console.error(error);
-        alert("Bir hata oluştu.");
+        alert("Hata oluştu: " + error.message);
       }
     } else {
-      // MetaMask yüklü değilse veya mobildeyse yönlendirme yap
-      window.open("https://metamask.app.link/", "_blank");
+      // Mobil cihazlar için: MetaMask uygulamasına yönlendirme (contract adresi ile)
+      const metamaskDeepLink = `https://metamask.app.link/token?address=${tokenAddress}&chain=sepolia`;
+      window.location.href = metamaskDeepLink;
     }
   };
 </script>
