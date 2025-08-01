@@ -1,71 +1,89 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lumen Wallet</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4 sm:p-6">
 
-  <header class="w-full flex justify-between items-center mb-8">
+  <header class="w-full flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
     <div class="flex items-center gap-2">
-      <img src="https://raw.githubusercontent.com/lumen-coin/lumen-coin.github.io/main/logo.png" alt="Lumen Logo" class="h-10">
+      <img src="https://raw.githubusercontent.com/Lumen-Coin/lumen-coin.github.io/refs/heads/main/LumenBanner.png" alt="Lumen Logo" class="h-10">
       <h1 class="text-2xl font-bold">Lumen</h1>
     </div>
-    <button id="walletBtn" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600">Wallet</button>
+    <button id="walletBtn" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto">Wallet</button>
   </header>
 
-  <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl">
-    <h2 class="text-xl font-semibold mb-4">Create New LMN Address</h2>
-    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Create Adress</button>
+  <div class="bg-gray-800 p-4 sm:p-6 rounded shadow-md w-full max-w-xl">
+    <h2 class="text-xl font-semibold mb-4">Create New Lumen Address</h2>
+    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full">Generate Address</button>
 
     <div id="walletDisplay" class="mt-6 hidden">
-      <p class="mb-2"><strong>LMN Adres:</strong> <span id="lmnAddress" class="text-green-400"></span></p>
-      <p class="mb-2"><strong>12 Kelimelik Anahtar (Mnemonic):</strong></p>
+      <p class="mb-2"><strong>Lumen Address:</strong> <span id="lmnAddress" class="text-green-400"></span></p>
+      <div id="qrCode" class="mb-4"></div>
+      <p class="mb-2"><strong>12-Word Key (Mnemonic):</strong></p>
       <textarea id="mnemonic" class="w-full p-2 rounded bg-gray-700 text-white" rows="2" readonly></textarea>
     </div>
   </div>
 
-  <div id="walletPanel" class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl mt-10 hidden">
+  <div id="walletPanel" class="bg-gray-800 p-4 sm:p-6 rounded shadow-md w-full max-w-xl mt-10 hidden">
     <h2 class="text-xl font-semibold mb-4">Wallet Login</h2>
     <label class="block mb-2">12-Word Key:</label>
     <textarea id="loginMnemonic" class="w-full p-2 rounded bg-gray-700 text-white mb-4" rows="2"></textarea>
-    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600">Sing IN</button>
+    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600 w-full">Login</button>
     <div id="balanceDisplay" class="mt-6 hidden">
-      <p class="mb-2"><strong>Adres:</strong> <span id="userAddress" class="text-blue-300"></span></p>
-      <p class="mb-2"><strong>Lumen Bakiyesi:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
+      <p class="mb-2"><strong>Address:</strong> <span id="userAddress" class="text-blue-300"></span></p>
+      <p class="mb-2"><strong>Sepolia ETH Balance:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
+      <p class="mb-2"><strong>Lumen Token Balance:</strong> <span id="tokenBalance" class="text-green-300">0</span></p>
+    </div>
+    <div id="transferSection" class="mt-6 hidden">
+      <h3 class="text-lg font-semibold mb-2">Send Tokens</h3>
+      <input type="text" id="recipient" placeholder="Recipient address" class="w-full p-2 mb-2 rounded bg-gray-700 text-white" />
+      <input type="number" id="amount" placeholder="Amount" class="w-full p-2 mb-2 rounded bg-gray-700 text-white" />
+      <button id="sendTokenBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full">Send</button>
+    </div>
+    <div id="historySection" class="mt-6 hidden">
+      <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
+      <ul id="txHistory" class="text-sm space-y-2"></ul>
     </div>
   </div>
 
 <script>
   const provider = new ethers.providers.JsonRpcProvider("https://rpc.sepolia.org");
+  const tokenAddress = "0xcbadDeeCF1113F235911E79183d070A0e8839287";
+  const tokenAbi = [
+    "function balanceOf(address) view returns (uint256)",
+    "function transfer(address to, uint amount) returns (bool)",
+    "event Transfer(address indexed from, address indexed to, uint amount)"
+  ];
 
   document.getElementById('generateBtn').onclick = async () => {
     const wallet = ethers.Wallet.createRandom();
     document.getElementById('walletDisplay').classList.remove('hidden');
-    document.getElementById('lmnAddress').innerText = `LMN-${wallet.address.substring(2, 8).toUpperCase()}`;
+    const lmnAddress = `Lumen-${wallet.address.substring(2, 8).toUpperCase()}`;
+    document.getElementById('lmnAddress').innerText = lmnAddress;
     document.getElementById('mnemonic').value = wallet.mnemonic.phrase;
+
+    // QR Code
+    const qrContainer = document.getElementById("qrCode");
+    qrContainer.innerHTML = "";
+    new QRCode(qrContainer, {
+      text: wallet.address,
+      width: 128,
+      height: 128,
+      colorDark : "#ffffff",
+      colorLight : "#000000",
+      correctLevel : QRCode.CorrectLevel.H
+    });
   };
 
   document.getElementById('walletBtn').onclick = () => {
     document.getElementById('walletPanel').classList.toggle('hidden');
   };
-
-  document.getElementById('loginBtn').onclick = async () => {
-    const phrase = document.getElementById('loginMnemonic').value.trim();
-    try {
-      const wallet = ethers.Wallet.fromMnemonic(phrase);
-      const balance = await provider.getBalance(wallet.address);
-      document.getElementById('balanceDisplay').classList.remove('hidden');
-      document.getElementById('userAddress').innerText = wallet.address;
-      document.getElementById('userBalance').innerText = ethers.utils.formatEther(balance) + ' ETH';
-    } catch (err) {
-      alert('Geçersiz 12 kelime.');
-    }
-  };
 </script>
-
 </body>
 </html>
