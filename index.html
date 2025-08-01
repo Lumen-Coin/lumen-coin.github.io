@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMN Wallet</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+
+  <header class="w-full flex justify-between items-center mb-8">
+    <h1 class="text-2xl font-bold">LMN Wallet</h1>
+    <button id="walletBtn" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600">Wallet</button>
+  </header>
+
+  <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl">
+    <h2 class="text-xl font-semibold mb-4">Yeni LMN Adresi Oluştur</h2>
+    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Adres Oluştur</button>
+
+    <div id="walletDisplay" class="mt-6 hidden">
+      <p class="mb-2"><strong>LMN Adres:</strong> <span id="lmnAddress" class="text-green-400"></span></p>
+      <p class="mb-2"><strong>12 Kelimelik Anahtar (Mnemonic):</strong></p>
+      <textarea id="mnemonic" class="w-full p-2 rounded bg-gray-700 text-white" rows="2" readonly></textarea>
+    </div>
+  </div>
+
+  <div id="walletPanel" class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl mt-10 hidden">
+    <h2 class="text-xl font-semibold mb-4">Cüzdan Girişi</h2>
+    <label class="block mb-2">12 Kelimelik Anahtar:</label>
+    <textarea id="loginMnemonic" class="w-full p-2 rounded bg-gray-700 text-white mb-4" rows="2"></textarea>
+    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600">Giriş Yap</button>
+    <div id="balanceDisplay" class="mt-6 hidden">
+      <p class="mb-2"><strong>Adres:</strong> <span id="userAddress" class="text-blue-300"></span></p>
+      <p class="mb-2"><strong>Sepolia ETH Bakiyesi:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
+    </div>
+  </div>
+
+<script>
+  const provider = new ethers.providers.JsonRpcProvider("https://rpc.sepolia.org");
+
+  document.getElementById('generateBtn').onclick = async () => {
+    const wallet = ethers.Wallet.createRandom();
+    document.getElementById('walletDisplay').classList.remove('hidden');
+    document.getElementById('lmnAddress').innerText = `LMN-${wallet.address.substring(2, 8).toUpperCase()}`;
+    document.getElementById('mnemonic').value = wallet.mnemonic.phrase;
+  };
+
+  document.getElementById('walletBtn').onclick = () => {
+    document.getElementById('walletPanel').classList.toggle('hidden');
+  };
+
+  document.getElementById('loginBtn').onclick = async () => {
+    const phrase = document.getElementById('loginMnemonic').value.trim();
+    try {
+      const wallet = ethers.Wallet.fromMnemonic(phrase);
+      const balance = await provider.getBalance(wallet.address);
+      document.getElementById('balanceDisplay').classList.remove('hidden');
+      document.getElementById('userAddress').innerText = wallet.address;
+      document.getElementById('userBalance').innerText = ethers.utils.formatEther(balance) + ' ETH';
+    } catch (err) {
+      alert('Geçersiz 12 kelime.');
+    }
+  };
+</script>
+
+</body>
+</html>
