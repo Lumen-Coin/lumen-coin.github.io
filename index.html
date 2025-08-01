@@ -10,13 +10,16 @@
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
 
   <header class="w-full flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold">Lumen Wallet</h1>
+    <div class="flex items-center gap-2">
+      <img src="https://raw.githubusercontent.com/lumen-coin/lumen-coin.github.io/main/logo.png" alt="Lumen Logo" class="h-10">
+      <h1 class="text-2xl font-bold">Lumen</h1>
+    </div>
     <button id="walletBtn" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600">Wallet</button>
   </header>
 
   <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl">
-    <h2 class="text-xl font-semibold mb-4">Yeni Lumen Adresi Oluştur</h2>
-    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Adres Oluştur</button>
+    <h2 class="text-xl font-semibold mb-4">Create New LMN Address</h2>
+    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Create Adress</button>
 
     <div id="walletDisplay" class="mt-6 hidden">
       <p class="mb-2"><strong>LMN Adres:</strong> <span id="lmnAddress" class="text-green-400"></span></p>
@@ -26,13 +29,13 @@
   </div>
 
   <div id="walletPanel" class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl mt-10 hidden">
-    <h2 class="text-xl font-semibold mb-4">Cüzdan Girişi</h2>
-    <label class="block mb-2">12 Kelimelik Anahtar:</label>
+    <h2 class="text-xl font-semibold mb-4">Wallet Login</h2>
+    <label class="block mb-2">12-Word Key:</label>
     <textarea id="loginMnemonic" class="w-full p-2 rounded bg-gray-700 text-white mb-4" rows="2"></textarea>
-    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600">Giriş Yap</button>
+    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600">Sing IN</button>
     <div id="balanceDisplay" class="mt-6 hidden">
       <p class="mb-2"><strong>Adres:</strong> <span id="userAddress" class="text-blue-300"></span></p>
-      <p class="mb-2"><strong>Sepolia ETH Bakiyesi:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
+      <p class="mb-2"><strong>Lumen Bakiyesi:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
     </div>
   </div>
 
