@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lumen Wallet</title>
+  <title>Lumen Wallet Oluştur</title>
   <!-- ethers.js -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <!-- QRCode.js -->
@@ -11,82 +11,49 @@
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4 sm:p-6">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
 
-  <header class="w-full flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-    <div class="flex items-center gap-2">
-      <img src="https://raw.githubusercontent.com/Lumen-Coin/lumen-coin.github.io/refs/heads/main/LumenBanner.png" alt="Lumen Logo" class="h-10" />
-      <h1 class="text-2xl font-bold"></h1>
-    </div>
-    <button id="walletBtn" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto">Wallet</button>
-  </header>
+  <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl text-center">
+    <h1 class="text-3xl font-bold mb-6">Lumen Cüzdan Oluştur</h1>
 
-  <div class="bg-gray-800 p-4 sm:p-6 rounded shadow-md w-full max-w-xl">
-    <h2 class="text-xl font-semibold mb-4">Create New Lumen Address</h2>
-    <button id="generateBtn" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full">Generate Address</button>
+    <button id="generateBtn" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded mb-6 w-full">
+      Yeni Cüzdan Oluştur
+    </button>
 
-    <div id="walletDisplay" class="mt-6 hidden">
-      <p class="mb-2"><strong>Lumen Address:</strong> <span id="lmnAddress" class="text-green-400"></span></p>
-      <div id="qrCode" class="mb-4"></div>
-      <p class="mb-2"><strong>12-Word Key (Mnemonic):</strong></p>
-      <textarea id="mnemonic" class="w-full p-2 rounded bg-gray-700 text-white" rows="2" readonly></textarea>
-    </div>
-  </div>
+    <div id="walletDisplay" class="hidden">
+      <p class="mb-2"><strong>Lumen Adresi:</strong></p>
+      <p id="lumenAddress" class="text-green-400 text-sm break-words mb-4"></p>
 
-  <div id="walletPanel" class="bg-gray-800 p-4 sm:p-6 rounded shadow-md w-full max-w-xl mt-10 hidden">
-    <h2 class="text-xl font-semibold mb-4">Wallet Login</h2>
-    <label class="block mb-2">12-Word Key:</label>
-    <textarea id="loginMnemonic" class="w-full p-2 rounded bg-gray-700 text-white mb-4" rows="2"></textarea>
-    <button id="loginBtn" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600 w-full">Login</button>
+      <div id="qrCode" class="flex justify-center mb-4"></div>
 
-    <div id="balanceDisplay" class="mt-6 hidden">
-      <p class="mb-2"><strong>Address:</strong> <span id="userAddress" class="text-blue-300"></span></p>
-      <p class="mb-2"><strong>Sepolia ETH Balance:</strong> <span id="userBalance" class="text-yellow-300">0</span></p>
-      <p class="mb-2"><strong>Lumen Token Balance:</strong> <span id="tokenBalance" class="text-green-300">0</span></p>
+      <p class="mb-2"><strong>12 Kelimelik Gizli Anahtar:</strong></p>
+      <textarea id="mnemonic" class="w-full p-2 rounded bg-gray-700 text-white mb-4" rows="2" readonly></textarea>
     </div>
 
-    <div id="transferSection" class="mt-6 hidden">
-      <h3 class="text-lg font-semibold mb-2">Send Lumen Tokens</h3>
-      <input type="text" id="recipient" placeholder="Recipient address (0x... or Lumen-ABCDEF)" class="w-full p-2 mb-2 rounded bg-gray-700 text-white" />
-      <input type="number" id="amount" placeholder="Amount" class="w-full p-2 mb-2 rounded bg-gray-700 text-white" />
-      <button id="sendTokenBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full">Send</button>
-    </div>
-
-    <div id="historySection" class="mt-6 hidden">
-      <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
-      <ul id="txHistory" class="text-sm space-y-2"></ul>
-    </div>
+    <button id="addTokenBtn" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded w-full mt-4">
+      MetaMask'a Token Ekle
+    </button>
   </div>
 
 <script>
-  // Sepolia RPC provider
-  const provider = new ethers.providers.JsonRpcProvider("https://rpc.sepolia.org");
+  const tokenAddress = "0xcbadDeeCF1113F235911E79183d070A0e8839287"; // Buraya kendi contract adresini yaz
+  const tokenSymbol = "LUMEN";
+  const tokenDecimals = 18;
 
-  // Lumen token contract info
-  const tokenAddress = "0xcbadDeeCF1113F235911E79183d070A0e8839287"; // Kendi token adresin
-  const tokenAbi = [
-    "function balanceOf(address) view returns (uint256)",
-    "function transfer(address to, uint amount) returns (bool)",
-    "event Transfer(address indexed from, address indexed to, uint amount)"
-  ];
-
-  let userWallet; // Login sonrası kullanılacak
-
-  // Generate New Wallet Button
   document.getElementById('generateBtn').onclick = () => {
     const wallet = ethers.Wallet.createRandom();
+    const address = wallet.address;
+    const mnemonic = wallet.mnemonic.phrase;
 
-    // Göster
+    const lumenCode = `Lumen-${address.substring(2, 8).toUpperCase()}`;
+    document.getElementById('lumenAddress').innerText = `${lumenCode}\n(${address})`;
+    document.getElementById('mnemonic').value = mnemonic;
     document.getElementById('walletDisplay').classList.remove('hidden');
-    const lmnAddress = `Lumen-${wallet.address.substring(2, 8).toUpperCase()}`;
-    document.getElementById('lmnAddress').innerText = lmnAddress;
-    document.getElementById('mnemonic').value = wallet.mnemonic.phrase;
 
-    // QR Code
     const qrContainer = document.getElementById("qrCode");
     qrContainer.innerHTML = "";
     new QRCode(qrContainer, {
-      text: wallet.address,
+      text: address,
       width: 128,
       height: 128,
       colorDark : "#ffffff",
@@ -95,103 +62,26 @@
     });
   };
 
-  // Wallet Panel Toggle
-  document.getElementById('walletBtn').onclick = () => {
-    document.getElementById('walletPanel').classList.toggle('hidden');
-  };
+  document.getElementById('addTokenBtn').onclick = async () => {
+    if (!window.ethereum) {
+      return alert("Lütfen MetaMask yüklü bir tarayıcı kullanın.");
+    }
 
-  // Güncel bakiye ve işlem geçmişini çek ve göster
-  async function updateBalancesAndHistory() {
-    if (!userWallet) return;
-
-    const token = new ethers.Contract(tokenAddress, tokenAbi, provider);
     try {
-      // ETH bakiyesi
-      const ethBalance = await provider.getBalance(userWallet.address);
-      // Token bakiyesi
-      const lumenBalance = await token.balanceOf(userWallet.address);
-
-      document.getElementById('userBalance').innerText = ethers.utils.formatEther(ethBalance);
-      document.getElementById('tokenBalance').innerText = ethers.utils.formatUnits(lumenBalance, 18);
-
-      // İşlem geçmişini al
-      const currentBlock = await provider.getBlockNumber();
-      const fromBlock = currentBlock - 10000 > 0 ? currentBlock - 10000 : 0;
-
-      const incoming = await token.queryFilter(token.filters.Transfer(null, userWallet.address), fromBlock);
-      const outgoing = await token.queryFilter(token.filters.Transfer(userWallet.address, null), fromBlock);
-
-      const historyList = document.getElementById('txHistory');
-      historyList.innerHTML = '';
-
-      [...incoming, ...outgoing]
-        .sort((a, b) => b.blockNumber - a.blockNumber)
-        .forEach(log => {
-          const from = log.args.from;
-          const to = log.args.to;
-          const amt = ethers.utils.formatUnits(log.args.amount, 18);
-          const item = document.createElement('li');
-          item.textContent = `${from === userWallet.address ? 'Sent' : 'Received'} ${amt} Lumen ${from === userWallet.address ? '→' : '←'} ${from === userWallet.address ? to : from}`;
-          historyList.appendChild(item);
-        });
-
+      await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: tokenAddress,
+            symbol: tokenSymbol,
+            decimals: tokenDecimals,
+          },
+        },
+      });
     } catch (error) {
-      console.error("Error updating balances/history:", error);
-    }
-  }
-
-  // Login butonu
-  document.getElementById('loginBtn').onclick = async () => {
-    const mnemonic = document.getElementById('loginMnemonic').value.trim();
-    if (!mnemonic) return alert("Please enter your 12-word key.");
-    try {
-      const wallet = ethers.Wallet.fromMnemonic(mnemonic);
-      userWallet = wallet.connect(provider);
-
-      // Panel görünür yap
-      document.getElementById('balanceDisplay').classList.remove('hidden');
-      document.getElementById('transferSection').classList.remove('hidden');
-      document.getElementById('historySection').classList.remove('hidden');
-
-      document.getElementById('userAddress').innerText = wallet.address;
-
-      // Bakiye ve işlem geçmişini güncelle
-      await updateBalancesAndHistory();
-
-    } catch (e) {
-      alert("Invalid mnemonic");
-      console.error(e);
-    }
-  };
-
-  // Token gönderme butonu
-  document.getElementById('sendTokenBtn').onclick = async () => {
-    const recipientInput = document.getElementById('recipient').value.trim();
-    const amountInput = document.getElementById('amount').value.trim();
-    if (!recipientInput || !amountInput) return alert("Please fill all fields.");
-
-    let recipient = recipientInput;
-    if (recipientInput.startsWith("Lumen-")) {
-      const suffix = recipientInput.split("-")[1];
-      // Bu örnekte sadece kendi adresin var, gerçek projede adres eşlemesini server'dan yapabilirsin
-      const allPossible = [userWallet.address];
-      recipient = allPossible.find(addr => addr.substring(2, 8).toUpperCase() === suffix);
-      if (!recipient) return alert("Lumen address not found.");
-    }
-
-    try {
-      const token = new ethers.Contract(tokenAddress, tokenAbi, userWallet);
-      const tx = await token.transfer(recipient, ethers.utils.parseUnits(amountInput, 18));
-      await tx.wait();
-
-      alert("Transfer successful!");
-
-      // Transfer sonrası bakiye ve geçmişi güncelle
-      await updateBalancesAndHistory();
-
-    } catch (e) {
-      alert("Transfer failed: " + e.message);
-      console.error(e);
+      console.error("Token eklenemedi:", error);
+      alert("Token eklenirken hata oluştu.");
     }
   };
 </script>
