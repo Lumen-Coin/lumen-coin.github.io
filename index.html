@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lumen Wallet Oluştur</title>
-  <!-- ethers.js -->
+  <title>Lumen Cüzdan Oluştur</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
 
+  <header class="w-full flex justify-center mb-6">
+    <div class="flex items-center gap-2">
+      <img src="https://raw.githubusercontent.com/Lumen-Coin/lumen-coin.github.io/refs/heads/main/LumenBanner.png" alt="Lumen Logo" class="h-10">
+      <h1 class="text-2xl font-bold">Lumen</h1>
+    </div>
+  </header>
+
   <div class="bg-gray-800 p-6 rounded shadow-md w-full max-w-xl text-center">
-    <h1 class="text-3xl font-bold mb-6">Lumen Cüzdan Oluştur</h1>
+    <h2 class="text-xl font-bold mb-6">Yeni Cüzdan Oluştur</h2>
 
     <button id="generateBtn" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded mb-6 w-full">
       Yeni Cüzdan Oluştur
@@ -36,7 +40,7 @@
   </div>
 
 <script>
-  const tokenAddress = "0xcbadDeeCF1113F235911E79183d070A0e8839287"; // Buraya kendi contract adresini yaz
+  const tokenAddress = "0xcbadDeeCF1113F235911E79183d070A0e8839287"; // Token contract adresin
   const tokenSymbol = "LUMEN";
   const tokenDecimals = 18;
 
@@ -63,25 +67,33 @@
   };
 
   document.getElementById('addTokenBtn').onclick = async () => {
-    if (!window.ethereum) {
-      return alert("Lütfen MetaMask yüklü bir tarayıcı kullanın.");
-    }
+    // Masaüstü MetaMask yüklüyse token eklemeyi dene
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const wasAdded = await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: tokenSymbol,
+              decimals: tokenDecimals
+            }
+          }
+        });
 
-    try {
-      await window.ethereum.request({
-        method: 'wallet_watchAsset',
-        params: {
-          type: 'ERC20',
-          options: {
-            address: tokenAddress,
-            symbol: tokenSymbol,
-            decimals: tokenDecimals,
-          },
-        },
-      });
-    } catch (error) {
-      console.error("Token eklenemedi:", error);
-      alert("Token eklenirken hata oluştu.");
+        if (wasAdded) {
+          alert("LUMEN token başarıyla eklendi!");
+        } else {
+          alert("Kullanıcı eklemeyi iptal etti.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Bir hata oluştu.");
+      }
+    } else {
+      // MetaMask yüklü değilse veya mobildeyse yönlendirme yap
+      window.open("https://metamask.app.link/", "_blank");
     }
   };
 </script>
